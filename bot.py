@@ -15,7 +15,35 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Salom! Ask me anything 🤖")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Send me any question. I can help in Uzbek, Russian, and English.")
+    await update.message.reply_text(
+        "Buyruqlar:\n"
+        "/check - matnni tekshirish\n"
+        "/explain - mavzuni tushuntirish\n"
+        "Oddiy savol yozsangiz ham javob beraman 😊"
+    )
+async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = " ".join(context.args)
+
+    prompt = f"Correct this sentence and explain mistakes: {text}"
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    await update.message.reply_text(response.choices[0].message.content)
+
+async def explain_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    topic = " ".join(context.args)
+
+    prompt = f"Explain this topic simply for a student: {topic}"
+
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    await update.message.reply_text(response.choices[0].message.content)
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -44,6 +72,8 @@ app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("help", help_command))
+app.add_handler(CommandHandler("check", check_command))
+app.add_handler(CommandHandler("explain", explain_command))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
 
