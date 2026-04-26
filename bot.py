@@ -10,6 +10,7 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 user_memory = {}
+user_modes = {} 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Salom! Ask me anything 🤖")
@@ -22,16 +23,10 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Oddiy savol yozsangiz ham javob beraman 😊"
     )
 async def check_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = " ".join(context.args)
-
-    prompt = f"Correct this sentence and explain mistakes: {text}"
-
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
-
-    await update.message.reply_text(response.choices[0].message.content)
+    user_id = update.message.chat_id
+    user_modes[user_id] = "check"
+    
+    await update.message.reply_text("Matnni yuboring, men tekshiraman ✍️")
 
 async def explain_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     topic = " ".join(context.args)
@@ -50,6 +45,25 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.chat_id
     user_text = update.message.text
 
+    mode = user_modes.get(user_id)
+
+    # 🔥 CHECK MODE
+    if mode == "check":
+        prompt = f"Correct this sentence and explain mistakes: {user_text}"
+
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        reply = response.choices[0].message.content
+
+        user_modes[user_id] = None  # reset mode
+
+        await update.message.reply_text(reply)
+        return
+
+    # 🧠 NORMAL MEMORY CHAT
     if user_id not in user_memory:
         user_memory[user_id] = []
 
