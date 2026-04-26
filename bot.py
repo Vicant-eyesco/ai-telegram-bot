@@ -30,7 +30,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a helpful Uzbek AI assistant."}
+            {"role": "system", "content": "You are an Uzbek student assistant. You explain topics simply, step-by-step, like a teacher. You help with English, math, and school subjects. You give examples and exercises. Speak mostly in Uzbek, but switch to English or Russian if needed."}
         ] + user_memory[user_id]
     )
 
